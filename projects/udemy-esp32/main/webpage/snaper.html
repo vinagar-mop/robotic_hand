@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Snaper</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background-color: black;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      color: red;
+      font-size: 72px;
+      font-family: Georgia, serif;
+      text-align: center;
+      padding-top: 40px;
+      letter-spacing: 4px;
+    }
+    .hand-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>The Snaper</h1>
+  <div class="hand-container">
+    <svg width="260" height="340" viewBox="0 0 260 340" xmlns="http://www.w3.org/2000/svg">
+      <!-- Palm -->
+      <rect x="55" y="160" width="150" height="130" rx="20" fill="#e8c49a"/>
+      <!-- Thumb -->
+      <ellipse cx="42" cy="185" rx="22" ry="38" fill="#e8c49a" transform="rotate(-20 42 185)"/>
+      <!-- Index finger -->
+      <rect x="65" y="80" width="32" height="100" rx="16" fill="#e8c49a"/>
+      <!-- Middle finger (snapping - slightly bent/raised) -->
+      <rect x="108" y="60" width="34" height="115" rx="16" fill="#e8c49a"/>
+      <!-- Ring finger -->
+      <rect x="152" y="85" width="30" height="100" rx="15" fill="#e8c49a"/>
+      <!-- Pinky -->
+      <rect x="188" y="110" width="26" height="80" rx="13" fill="#e8c49a"/>
+
+      <!-- Finger knuckle lines -->
+      <line x1="68" y1="155" x2="94" y2="158" stroke="#c89a6e" stroke-width="2" stroke-linecap="round"/>
+      <line x1="110" y1="155" x2="140" y2="158" stroke="#c89a6e" stroke-width="2" stroke-linecap="round"/>
+      <line x1="154" y1="155" x2="180" y2="158" stroke="#c89a6e" stroke-width="2" stroke-linecap="round"/>
+      <line x1="190" y1="168" x2="212" y2="170" stroke="#c89a6e" stroke-width="2" stroke-linecap="round"/>
+
+      <!-- Palm lines -->
+      <path d="M 80 200 Q 130 210 175 200" stroke="#c89a6e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <path d="M 70 225 Q 130 235 185 225" stroke="#c89a6e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+
+      <!-- Snap sparkle lines -->
+      <line x1="118" y1="55" x2="108" y2="30" stroke="red" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="128" y1="50" x2="138" y2="22" stroke="red" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="140" y1="58" x2="162" y2="38" stroke="red" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="108" cy="26" r="4" fill="red"/>
+      <circle cx="138" cy="18" r="4" fill="red"/>
+      <circle cx="165" cy="34" r="4" fill="red"/>
+
+      <!-- Wrist -->
+      <rect x="75" y="275" width="110" height="45" rx="10" fill="#e8c49a"/>
+      <line x1="85" y1="285" x2="175" y2="285" stroke="#c89a6e" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="85" y1="300" x2="175" y2="300" stroke="#c89a6e" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+  </div>
+</body>
+</html>
