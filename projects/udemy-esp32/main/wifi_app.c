@@ -15,6 +15,7 @@
 #include "lwip/netdb.h"
 
 #include "http_server.h"
+#include "a0090_servo_motor.h"
 //#include "rgb_led.h"
 #include "task_common.h"
 #include "wifi_app.h"
@@ -145,7 +146,7 @@ static void wifi_app_soft_ap_config(void)
 	ESP_ERROR_CHECK(esp_netif_dhcps_start(esp_netif_ap));						///> Start the AP DHCP server (for connecting stations e.g. your mobile device)
 
 	ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_APSTA));						///> Setting the mode as Access Point / Station Mode
-	ESP_ERROR_CHECK(esp_wifi_set_config(ESP_ERR_WIFI_MAC, &ap_config));			///> Set our configuration
+	ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &ap_config));			///> Set our configuration
 	ESP_ERROR_CHECK(esp_wifi_set_bandwidth(WIFI_IF_AP, WIFI_AP_BANDWIDTH));		///> Our default bandwidth 20 MHz
 	ESP_ERROR_CHECK(esp_wifi_set_ps(WIFI_STA_POWER_SAVE));						///> Power save set to "NONE"
 
@@ -168,6 +169,8 @@ static void wifi_app_task(void *pvParameters)
 	// SoftAP config
 	wifi_app_soft_ap_config();
 
+	a0090_servor_motor_init();
+
 	// Start WiFi
 	ESP_ERROR_CHECK(esp_wifi_start());
 
@@ -185,6 +188,9 @@ static void wifi_app_task(void *pvParameters)
 
 					http_server_start();
 					//rgb_led_http_server_started();
+					// start command to and from the hand.
+					//hand_http_server_started();
+
 
 					break;
 

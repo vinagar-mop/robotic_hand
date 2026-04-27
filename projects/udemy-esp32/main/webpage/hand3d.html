@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Robotic Hand Controller</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #060d1f;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      color: #fff;
+    }
+
+    #canvas-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #hand-canvas {
+      display: block;
+      cursor: grab;
+    }
+    #hand-canvas:active { cursor: grabbing; }
+
+    /* ---- Control panel ---- */
+    #controls {
+      width: 300px;
+      min-width: 300px;
+      background: rgba(8, 16, 36, 0.97);
+      border-left: 1px solid rgba(60, 120, 220, 0.3);
+      display: flex;
+      flex-direction: column;
+      padding: 22px 14px 14px;
+      gap: 14px;
+      overflow-y: auto;
+    }
+
+    .panel-title {
+      text-align: center;
+      font-size: 1.25em;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #60b4ff;
+      border-bottom: 1px solid rgba(60, 120, 220, 0.25);
+      padding-bottom: 12px;
+    }
+
+    .panel-sub {
+      text-align: center;
+      font-size: 0.72em;
+      color: #3a6898;
+      margin-top: -10px;
+      letter-spacing: 1px;
+    }
+
+    .section-label {
+      font-size: 0.68em;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #3a6898;
+      margin-bottom: 6px;
+    }
+
+    .btn-row { display: flex; gap: 8px; }
+
+    .btn {
+      flex: 1;
+      padding: 9px 8px;
+      border: none;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 0.82em;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      transition: filter 0.15s, transform 0.1s;
+    }
+    .btn:hover  { filter: brightness(1.25); transform: translateY(-1px); }
+    .btn:active { transform: translateY(0);  filter: brightness(0.9); }
+
+    .btn-open  { background: linear-gradient(135deg,#047857,#10b981); color:#fff; }
+    .btn-close { background: linear-gradient(135deg,#991b1b,#ef4444); color:#fff; }
+
+    hr.div { border:none; border-top:1px solid rgba(60,120,220,0.18); }
+
+    .finger-card {
+      background: rgba(15,28,55,0.9);
+      border: 1px solid rgba(60,120,220,0.2);
+      border-radius: 10px;
+      padding: 11px 13px;
+      transition: border-color 0.2s;
+    }
+    .finger-card:hover { border-color: rgba(60,140,255,0.45); }
+
+    .card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+    .finger-label { font-size:0.88em; font-weight:600; color:#93c5fd; }
+
+    .angle-badge {
+      font-size:0.75em; font-weight:700; color:#60a5fa;
+      background:rgba(37,75,150,0.35); padding:2px 9px;
+      border-radius:10px; min-width:52px; text-align:center;
+    }
+
+    .angle-bar { height:4px; background:rgba(20,40,80,0.9); border-radius:2px; margin-bottom:9px; overflow:hidden; }
+    .angle-fill { height:100%; background:linear-gradient(90deg,#3b82f6,#10b981); border-radius:2px; transition:width 0.08s linear; }
+
+    .card-btns { display:flex; gap:6px; }
+    .card-btns .btn { font-size:0.78em; padding:7px 6px; }
+
+    .hint { text-align:center; font-size:0.7em; color:#1e3a60; padding-top:2px; }
+
+    @media (max-width: 620px) {
+      body { flex-direction: column; }
+      #controls { width:100%; min-width:auto; max-height:52vh; border-left:none; border-top:1px solid rgba(60,120,220,0.25); }
+    }
+  </style>
+</head>
+<body>
+
+<div id="canvas-container">
+  <canvas id="hand-canvas"></canvas>
+</div>
+
+<div id="controls">
+  <div class="panel-title">Robotic Hand</div>
+  <div class="panel-sub">3D Controller Interface</div>
+
+  <div>
+    <div class="section-label">All Fingers</div>
+    <div class="btn-row">
+      <button class="btn btn-open"  onclick="openAll()">Open All</button>
+      <button class="btn btn-close" onclick="closeAll()">Close All</button>
+    </div>
+  </div>
+
+  <hr class="div">
+
+  <div>
+    <div class="section-label">Individual Fingers</div>
+    <div id="finger-cards" style="display:flex;flex-direction:column;gap:9px;"></div>
+  </div>
+
+  <div class="hint">0° = Closed &nbsp;·&nbsp; 90° = Half open &nbsp;·&nbsp; 180° = Fully open</div>
+  <div class="hint" style="margin-top:-10px;">Drag to rotate &nbsp;·&nbsp; Scroll to zoom</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ═══════════════════════════════════════════════
+//  RENDERER / SCENE / CAMERA
+// ═══════════════════════════════════════════════
+var W_container = document.getElementById('canvas-container');
+var W_canvas    = document.getElementById('hand-canvas');
+
+var renderer = new THREE.WebGLRenderer({ canvas: W_canvas, antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type    = THREE.PCFSoftShadowMap;
+renderer.setClearColor(0x0a1428);
+renderer.outputEncoding    = THREE.sRGBEncoding;
+
+var scene  = new THREE.Scene();
+var camera = new THREE.PerspectiveCamera(44, 1, 0.1, 200);
+
+function resize() {
+  var w = W_container.clientWidth;
+  var h = W_container.clientHeight;
+  if (w === 0 || h === 0) return;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+resize();
+window.addEventListener('resize', resize);
+
+// ═══════════════════════════════════════════════
+//  LIGHTING  — bright enough to see metals
+// ═══════════════════════════════════════════════
+scene.add(new THREE.AmbientLight(0x8899bb, 1.2));
+
+var sun = new THREE.DirectionalLight(0xffffff, 2.0);
+sun.position.set(5, 10, 8);
+sun.castShadow = true;
+sun.shadow.mapSize.setScalar(1024);
+sun.shadow.camera.left   = -5; sun.shadow.camera.right  = 5;
+sun.shadow.camera.top    =  6; sun.shadow.camera.bottom = -5;
+sun.shadow.camera.far    = 30;
+scene.add(sun);
+
+var keyLight = new THREE.PointLight(0x6699ff, 3.5, 20);
+keyLight.position.set(-3, 3, 4);
+scene.add(keyLight);
+
+var rimLight = new THREE.PointLight(0xff8844, 2.0, 15);
+rimLight.position.set(3, -1, 3);
+scene.add(rimLight);
+
+var topLight = new THREE.PointLight(0xaaccff, 1.5, 18);
+topLight.position.set(0, 6, -2);
+scene.add(topLight);
+
+// ═══════════════════════════════════════════════
+//  MATERIALS  — metalness lowered so they catch light
+// ═══════════════════════════════════════════════
+function stdMat(hex, metal, rough) {
+  return new THREE.MeshStandardMaterial({ color: hex, metalness: metal, roughness: rough });
+}
+
+var MAT_PALM  = stdMat(0x2a5c8c, 0.45, 0.35);
+var MAT_WRIST = stdMat(0x1e4870, 0.40, 0.40);
+var MAT_SEG   = [stdMat(0x3a7ab8, 0.40, 0.30),
+                 stdMat(0x2e679e, 0.45, 0.30),
+                 stdMat(0x225285, 0.50, 0.28)];
+var MAT_JOINT = stdMat(0x6aaee0, 0.55, 0.20);
+MAT_JOINT.emissive    = new THREE.Color(0x1a3a60);
+MAT_JOINT.emissiveIntensity = 0.3;
+var MAT_PLAT  = stdMat(0x0d1e3c, 0.60, 0.50);
+
+// ═══════════════════════════════════════════════
+//  GEOMETRY HELPERS
+// ═══════════════════════════════════════════════
+function mkBox(w, h, d, mat) {
+  var m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+  m.castShadow = m.receiveShadow = true;
+  return m;
+}
+function mkSph(r, mat) {
+  var m = new THREE.Mesh(new THREE.SphereGeometry(r, 12, 12), mat);
+  m.castShadow = true;
+  return m;
+}
+function mkCyl(rt, rb, h, mat) {
+  var m = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, 18), mat);
+  m.castShadow = m.receiveShadow = true;
+  return m;
+}
+
+// ═══════════════════════════════════════════════
+//  PLATFORM
+// ═══════════════════════════════════════════════
+var plat = mkCyl(2.6, 2.9, 0.14, MAT_PLAT);
+plat.position.y = -2.3;
+scene.add(plat);
+
+var ringMat = new THREE.MeshStandardMaterial({ color:0x2060ee, emissive:0x1030bb, metalness:0.8, roughness:0.1 });
+var ringMesh = new THREE.Mesh(new THREE.TorusGeometry(2.5, 0.03, 8, 80), ringMat);
+ringMesh.rotation.x = Math.PI / 2;
+ringMesh.position.y = -2.23;
+scene.add(ringMesh);
+
+// Background particles
+(function() {
+  var N = 300, pos = new Float32Array(N * 3);
+  for (var i = 0; i < N; i++) {
+    pos[i*3]   = (Math.random()-0.5)*24;
+    pos[i*3+1] = (Math.random()-0.5)*18;
+    pos[i*3+2] = (Math.random()-0.5)*24 - 5;
+  }
+  var g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  scene.add(new THREE.Points(g, new THREE.PointsMaterial({ color:0x2a5090, size:0.06 })));
+})();
+
+// ═══════════════════════════════════════════════
+//  HAND GROUP
+// ═══════════════════════════════════════════════
+var handGroup = new THREE.Group();
+scene.add(handGroup);
+
+// Palm
+var palm = mkBox(1.55, 1.95, 0.33, MAT_PALM);
+handGroup.add(palm);
+
+// Knuckle bumps
+var kxPositions = [-0.52, -0.19, 0.14, 0.47];
+for (var ki = 0; ki < kxPositions.length; ki++) {
+  var kn = mkSph(0.105, MAT_JOINT);
+  kn.position.set(kxPositions[ki], 0.95, 0.12);
+  kn.scale.set(1, 0.65, 0.85);
+  handGroup.add(kn);
+}
+
+// Wrist
+var wrist = mkCyl(0.40, 0.47, 1.1, MAT_WRIST);
+wrist.position.y = -1.52;
+handGroup.add(wrist);
+
+var forearm = mkCyl(0.30, 0.40, 0.55, MAT_WRIST);
+forearm.position.y = -2.28;
+handGroup.add(forearm);
+
+// ═══════════════════════════════════════════════
+//  FINGER FACTORY  — 3 pivots (MCP, PIP, DIP)
+// ═══════════════════════════════════════════════
+function buildFinger(lengths, baseW) {
+  var pivots = [];
+
+  function makeSeg(len, wScale, matIdx) {
+    var g = new THREE.Group();
+    var bw = baseW * wScale;
+    var b = mkBox(bw, len, bw * 0.88, MAT_SEG[matIdx]);
+    b.position.y = len / 2;
+    g.add(b);
+    g.add(mkSph(bw * 0.56, MAT_JOINT));
+    return g;
+  }
+
+  var p0 = new THREE.Group();
+  p0.add(makeSeg(lengths[0], 1.00, 0));
+
+  var p1 = new THREE.Group();
+  p1.position.y = lengths[0];
+  p0.add(p1);
+  p1.add(makeSeg(lengths[1], 0.87, 1));
+
+  var p2 = new THREE.Group();
+  p2.position.y = lengths[1];
+  p1.add(p2);
+  p2.add(makeSeg(lengths[2], 0.74, 2));
+
+  var tip = mkSph(baseW * 0.74 * 0.46, MAT_SEG[2]);
+  tip.position.y = lengths[2];
+  tip.scale.set(1, 1.1, 0.9);
+  p2.add(tip);
+
+  pivots.push(p0, p1, p2);
+  return { rootPivot: p0, pivots: pivots };
+}
+
+// 4 regular fingers
+//           name        x      yBase  L0    L1    L2   width
+var FDEFS = [
+  ['Index',   0.40,  0.975, 0.53, 0.40, 0.29, 0.195],
+  ['Middle',  0.11,  0.975, 0.59, 0.44, 0.31, 0.206],
+  ['Ring',   -0.19,  0.975, 0.53, 0.40, 0.29, 0.195],
+  ['Pinky',  -0.46,  0.840, 0.41, 0.29, 0.21, 0.155]
+];
+
+var fingerObjects = {};
+
+for (var fi = 0; fi < FDEFS.length; fi++) {
+  var fd   = FDEFS[fi];
+  var name = fd[0], fx = fd[1], fy = fd[2];
+  var flens = [fd[3], fd[4], fd[5]], fw = fd[6];
+  var f = buildFinger(flens, fw);
+  f.rootPivot.position.set(fx, fy, 0.06);
+  handGroup.add(f.rootPivot);
+  fingerObjects[name] = f;
+}
+
+// Thumb (2 segments, angled)
+(function() {
+  var tBase = new THREE.Group();
+  tBase.position.set(0.75, 0.30, 0.05);
+  tBase.rotation.z = -Math.PI / 3.8;
+  handGroup.add(tBase);
+
+  var p0 = new THREE.Group();
+  tBase.add(p0);
+  var ts0 = mkBox(0.22, 0.42, 0.20, MAT_SEG[0]);
+  ts0.position.y = 0.21; ts0.castShadow = true;
+  p0.add(ts0);
+  p0.add(mkSph(0.127, MAT_JOINT));
+
+  var p1 = new THREE.Group();
+  p1.position.y = 0.42;
+  p0.add(p1);
+  var ts1 = mkBox(0.19, 0.33, 0.17, MAT_SEG[1]);
+  ts1.position.y = 0.165; ts1.castShadow = true;
+  p1.add(ts1);
+  p1.add(mkSph(0.110, MAT_JOINT));
+
+  var tTip = mkSph(0.093, MAT_SEG[2]);
+  tTip.position.y = 0.33;
+  tTip.scale.set(1, 1.1, 0.9);
+  p1.add(tTip);
+
+  fingerObjects['Thumb'] = { rootPivot: tBase, pivots: [p0, p1], isThumb: true };
+})();
+
+// ═══════════════════════════════════════════════
+//  ORBIT CAMERA
+// ═══════════════════════════════════════════════
+var orb = { theta: 0.28, phi: 1.22, radius: 8.2 };
+
+function applyOrbit() {
+  var t = orb.theta, p = orb.phi, r = orb.radius;
+  camera.position.set(
+    r * Math.sin(p) * Math.sin(t),
+    r * Math.cos(p) + 0.5,
+    r * Math.sin(p) * Math.cos(t)
+  );
+  camera.lookAt(0, 0.25, 0);
+}
+applyOrbit();
+
+var dragging = false, prevPt = { x: 0, y: 0 };
+W_canvas.addEventListener('mousedown', function(e) { dragging=true; prevPt={x:e.clientX,y:e.clientY}; });
+window.addEventListener('mouseup',     function()  { dragging=false; });
+window.addEventListener('mousemove',   function(e) {
+  if (!dragging) return;
+  orb.theta -= (e.clientX - prevPt.x) * 0.008;
+  orb.phi    = Math.max(0.22, Math.min(2.65, orb.phi - (e.clientY - prevPt.y) * 0.008));
+  prevPt = {x: e.clientX, y: e.clientY};
+  applyOrbit();
+});
+W_canvas.addEventListener('wheel', function(e) {
+  orb.radius = Math.max(4, Math.min(16, orb.radius + e.deltaY * 0.012));
+  applyOrbit();
+  e.preventDefault();
+}, { passive: false });
+
+var prevTouch = null;
+W_canvas.addEventListener('touchstart', function(e) { prevTouch={x:e.touches[0].clientX,y:e.touches[0].clientY}; }, {passive:true});
+W_canvas.addEventListener('touchmove',  function(e) {
+  if (!prevTouch) return;
+  orb.theta -= (e.touches[0].clientX - prevTouch.x) * 0.01;
+  orb.phi    = Math.max(0.22, Math.min(2.65, orb.phi - (e.touches[0].clientY - prevTouch.y) * 0.01));
+  prevTouch = {x:e.touches[0].clientX, y:e.touches[0].clientY};
+  applyOrbit();
+  e.preventDefault();
+}, {passive:false});
+
+// ═══════════════════════════════════════════════
+//  FINGER ANGLE STATE  0°=closed  180°=open
+// ═══════════════════════════════════════════════
+var NAMES   = ['Thumb','Index','Middle','Ring','Pinky'];
+var curAng  = {Thumb:180,Index:180,Middle:180,Ring:180,Pinky:180};
+var tgtAng  = {Thumb:180,Index:180,Middle:180,Ring:180,Pinky:180};
+
+function setTarget(name, deg) {
+  tgtAng[name] = Math.max(0, Math.min(180, deg));
+}
+
+function applyAngle(name, deg) {
+  var f = fingerObjects[name];
+  var t = deg / 180;  // 0=closed, 1=open
+  if (f.isThumb) {
+    f.pivots[0].rotation.x = -(1-t) * 1.0;
+    f.pivots[0].rotation.z =  (1-t) * 0.55;
+    f.pivots[1].rotation.x = -(1-t) * 0.7;
+  } else {
+    f.pivots[0].rotation.x = -(1-t) * 1.52;
+    f.pivots[1].rotation.x = -(1-t) * 1.48;
+    f.pivots[2].rotation.x = -(1-t) * 1.05;
+  }
+}
+
+// Start fully open
+for (var ni = 0; ni < NAMES.length; ni++) applyAngle(NAMES[ni], 180);
+
+// ═══════════════════════════════════════════════
+//  GLOBAL CONTROLS  (called from onclick)
+// ═══════════════════════════════════════════════
+function openAll()  { for (var i=0;i<NAMES.length;i++) setTarget(NAMES[i],180); }
+function closeAll() { for (var i=0;i<NAMES.length;i++) setTarget(NAMES[i],  0); }
+
+// ═══════════════════════════════════════════════
+//  BUILD UI CARDS
+// ═══════════════════════════════════════════════
+var badges = {}, fills = {};
+var cardsEl = document.getElementById('finger-cards');
+
+for (var ci = 0; ci < NAMES.length; ci++) {
+  (function(nm) {
+    var card = document.createElement('div');
+    card.className = 'finger-card';
+    card.innerHTML =
+      '<div class="card-header">' +
+        '<span class="finger-label">' + nm + '</span>' +
+        '<span class="angle-badge" id="badge-' + nm + '">180°</span>' +
+      '</div>' +
+      '<div class="angle-bar"><div class="angle-fill" id="fill-' + nm + '" style="width:100%"></div></div>' +
+      '<div class="card-btns">' +
+        '<button class="btn btn-open"  onclick="setTarget(\'' + nm + '\',180)">Open</button>' +
+        '<button class="btn btn-close" onclick="setTarget(\'' + nm + '\',0)">Close</button>' +
+      '</div>';
+    cardsEl.appendChild(card);
+    badges[nm] = document.getElementById('badge-' + nm);
+    fills[nm]  = document.getElementById('fill-'  + nm);
+  })(NAMES[ci]);
+}
+
+function updateUI(name, deg) {
+  badges[name].textContent = Math.round(deg) + '°';
+  fills[name].style.width  = (deg / 180 * 100).toFixed(1) + '%';
+}
+
+// ═══════════════════════════════════════════════
+//  RENDER LOOP
+// ═══════════════════════════════════════════════
+var lastT = 0;
+var LERP  = 0.006;
+
+function animate(t) {
+  requestAnimationFrame(animate);
+  var dt = Math.min(t - lastT, 50);
+  lastT = t;
+
+  for (var i = 0; i < NAMES.length; i++) {
+    var nm   = NAMES[i];
+    var diff = tgtAng[nm] - curAng[nm];
+    curAng[nm] += diff * Math.min(1, dt * LERP);
+    applyAngle(nm, curAng[nm]);
+    updateUI(nm, curAng[nm]);
+  }
+
+  // Ambient float + light drift
+  var s = t * 0.001;
+  handGroup.position.y  = Math.sin(s * 0.55) * 0.04;
+  keyLight.position.set(-3 + Math.sin(s * 0.6)  * 0.55, 3, 4);
+  rimLight.position.set( 3 + Math.cos(s * 0.4)  * 0.45, -1, 3);
+
+  renderer.render(scene, camera);
+}
+requestAnimationFrame(animate);
+</script>
+</body>
+</html>

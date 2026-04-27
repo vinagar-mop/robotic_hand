@@ -5,28 +5,61 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 		<meta name="apple-mobile-web-app-capable" content="yes" />
 		<script src='jquery-3.3.1.min.js'></script>
+		<!-- Three.js from CDN — the connecting device needs internet access for 3D rendering -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 		<link rel="stylesheet" href="app.css">
-		<script async src="app.js"></script>
-		<title>ESP32 Udemy Course</title>
+		<script src="app.js"></script>
+		<title>ESP32 Robotic Hand</title>
 	</head>
 	<body>
 	<header>
-		<h1>ESP32 Application Development</h1>
+		<h1>ESP32 Robotic Hand</h1>
 	</header>
-		
-	<div id="OTA">
-	<h2>ESP32 Firmware Update</h2>
+
+	<!-- Tab navigation -->
+	<nav class="tab-nav">
+		<button class="tab-btn active" id="btn-ota"  onclick="showTab('ota')">Firmware Update</button>
+		<button class="tab-btn"        id="btn-hand" onclick="showTab('hand')">Hand Control</button>
+	</nav>
+
+	<!-- ════════ Firmware Update Tab ════════ -->
+	<div id="tab-ota">
+		<h2>ESP32 Firmware Update</h2>
 		<label id="latest_firmware_label">Latest Firmware: </label>
-		<div id="latest_firmware"></div> 
-		<input type="file" id="selected_file" accept=".bin" style="display: none;" onchange="getFileInfo()" />
+		<div id="latest_firmware"></div>
+		<input type="file" id="selected_file" accept=".bin" style="display:none;" onchange="getFileInfo()" />
 		<div class="buttons">
-			<input type="button" value="Select File" onclick="document.getElementById('selected_file').click();" />
+			<input type="button" value="Select File"     onclick="document.getElementById('selected_file').click();" />
 			<input type="button" value="Update Firmware" onclick="updateFirmware()" />
 		</div>
-		<h4 id="file_info"></h4>	
+		<h4 id="file_info"></h4>
 		<h4 id="ota_update_status"></h4>
 	</div>
-	<hr>
-		
+
+	<!-- ════════ Hand Control Tab ════════ -->
+	<div id="tab-hand" style="display:none;">
+
+		<!-- 3-D viewport -->
+		<div id="hand-viewport">
+			<canvas id="hand-canvas"></canvas>
+			<div id="hand-hint">Drag to rotate &nbsp;·&nbsp; Scroll to zoom</div>
+		</div>
+
+		<!-- Controls -->
+		<div id="hand-controls">
+			<div class="hand-section-label">All Fingers</div>
+			<div class="hand-global-row">
+				<button class="hbtn hbtn-open"  onclick="handOpenAll()">Open All</button>
+				<button class="hbtn hbtn-close" onclick="handCloseAll()">Close All</button>
+			</div>
+
+			<div class="hand-section-label" style="margin-top:14px;">Individual Fingers</div>
+			<div id="hand-finger-cards"></div>
+
+			<div class="hand-legend">0° = Closed &nbsp;·&nbsp; 90° = Half open &nbsp;·&nbsp; 180° = Fully open</div>
+		</div>
+
+	</div>
+
 	</body>
-<html>
+</html>
