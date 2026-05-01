@@ -1,3 +1,0 @@
-# Override some defaults so BT stack is enabled
-# by default in this example
-CONFIG_PARTITION_TABLE_SINGLE_APP_LARGE=y

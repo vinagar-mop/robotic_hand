@@ -1,4 +1,0 @@
-## IDF Component Manager Manifest File
-dependencies:
-  espressif/usb:
-    version: "^1.0.0"

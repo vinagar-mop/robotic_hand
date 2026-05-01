@@ -1,3 +1,0 @@
-CONFIG_ESP_CONSOLE_NONE=y
-# Destination can be selectable on runtime
-CONFIG_APPTRACE_DEST_ALL=y

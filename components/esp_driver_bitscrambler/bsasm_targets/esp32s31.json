@@ -1,6 +1,0 @@
-{
-	"chipname": "esp32s31",
-	"extra_instruction_groups": [
-		"addcti"
-	]
-}
