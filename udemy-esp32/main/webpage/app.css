@@ -1,0 +1,254 @@
+body {
+    background-color: #f1f1f1;
+    font-family: HelveticaNeueRegular, HelveticaNeue-Regular, "Helvetica Neue Regular", HelveticaNeue, "Helvetica Neue", Helvetica, Arial;
+    color: #0272B7;
+    margin: 0;
+}
+
+h1 {
+    display: block;
+    text-align: center;
+    margin: 0;
+    padding: 10px;
+    font-size: 1.7em;
+    color: #1d3557;
+}
+
+h2 {
+    font-size: 1.4em;
+    color: #1d3557;
+}
+
+h3 {
+    font-size: 1.2em;
+    color: #1d3557;
+}
+
+h4 {
+    font-size: 1em;
+    color: #1d3557;
+}
+
+#latest_firmware, #latest_firmware_label {
+    display: inline;
+}
+#latest_firmware {
+    color: #1d3557;
+}
+
+.buttons {
+    padding: 5px;
+}
+
+input[type="button"] {
+    font-size: 12px;
+    border: 0;
+    line-height: 2;
+    padding: 0 5px;
+    text-align: center;
+    color: #ffffff;
+    text-shadow: 1px 1px 1px #000;
+    border-radius: 10px;
+    background-color: RGBA(106,125,144,0.35);
+    background-image: linear-gradient(to top left,
+                                      rgba(0,0,0,.2),
+                                      rgba(0,0,0,.2) 30%,
+                                      rgba(0,0,0,0));
+    box-shadow: inset 2px 2px 3px rgba(255,255,255,.6),
+                inset -2px -2px 3px rgba(0,0,0,.6);
+}
+
+input[type="button"]:hover {
+    background-color: RGBA(112,164,222,0.68);
+}
+
+input[type="button"]:active {
+    box-shadow: inset -2px -2px 3px rgba(255,255,255,.6),
+                inset 2px 2px 3px rgba(0,0,0,.6);
+}
+
+/* ═══════════════════════════════════════════════
+   TAB NAVIGATION
+   ═══════════════════════════════════════════════ */
+header {
+    background: #1d3557;
+}
+header h1 {
+    color: #a8d8f0;
+    padding: 12px 10px;
+}
+
+
+/* ═══════════════════════════════════════════════
+   HAND CONTROL TAB
+   ═══════════════════════════════════════════════ */
+
+/* 3-D viewport */
+#hand-viewport {
+    position: relative;
+    width: 100%;
+    height: 360px;
+    background: #0a1428;
+    overflow: hidden;
+}
+
+#hand-canvas {
+    display: block;
+    cursor: grab;
+    width: 100%;
+    height: 100%;
+}
+#hand-canvas:active { cursor: grabbing; }
+
+#hand-hint {
+    position: absolute;
+    bottom: 8px;
+    left: 0; right: 0;
+    text-align: center;
+    font-size: 0.68em;
+    color: rgba(100,150,220,0.55);
+    pointer-events: none;
+    letter-spacing: 0.5px;
+}
+
+/* Controls panel */
+#hand-controls {
+    background: #0d1e3c;
+    padding: 14px 12px 18px;
+    color: #c0d8f0;
+}
+
+.hand-section-label {
+    font-size: 0.68em;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #4a7aaa;
+    margin-bottom: 8px;
+    font-family: inherit;
+}
+
+/* Global open/close row */
+.hand-global-row {
+    display: flex;
+    gap: 8px;
+}
+
+/* Shared hand button base */
+.hbtn {
+    flex: 1;
+    padding: 9px 6px;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 0.82em;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-family: inherit;
+    transition: filter 0.15s, transform 0.1s;
+}
+.hbtn:hover  { filter: brightness(1.2);  transform: translateY(-1px); }
+.hbtn:active { filter: brightness(0.88); transform: translateY(0); }
+
+.hbtn-open  { background: linear-gradient(135deg, #047857, #10b981); color: #fff; }
+.hbtn-close { background: linear-gradient(135deg, #991b1b, #ef4444); color: #fff; }
+
+/* Finger cards */
+.hfinger-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(60,120,220,0.2);
+    border-radius: 9px;
+    padding: 10px 11px;
+    margin-bottom: 8px;
+    transition: border-color 0.2s;
+}
+.hfinger-card:hover { border-color: rgba(60,140,255,0.45); }
+
+.hcard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 7px;
+}
+
+.hfinger-label {
+    font-size: 0.88em;
+    font-weight: 600;
+    color: #93c5fd;
+}
+
+.hangle-badge {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: #60a5fa;
+    background: rgba(37,75,150,0.4);
+    padding: 2px 9px;
+    border-radius: 10px;
+    min-width: 48px;
+    text-align: center;
+}
+
+.hangle-bar {
+    height: 4px;
+    background: rgba(20,40,80,0.9);
+    border-radius: 2px;
+    margin-bottom: 8px;
+    overflow: hidden;
+}
+
+.hangle-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #10b981);
+    border-radius: 2px;
+    transition: width 0.08s linear;
+}
+
+.hcard-btns {
+    display: flex;
+    gap: 6px;
+}
+.hcard-btns .hbtn {
+    font-size: 0.78em;
+    padding: 7px 6px;
+}
+
+.hand-legend {
+    margin-top: 12px;
+    text-align: center;
+    font-size: 0.7em;
+    color: #2a4060;
+    letter-spacing: 0.3px;
+}
+
+
+/*
+* Hand presets section 
+*/
+.hand-preset-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.hbtn-preset {
+    color: #fff;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    padding: 10px;
+    cursor: pointer;
+    transition: filter 0.15s;
+}
+
+.hbtn-point  { background: linear-gradient(135deg, #2c5aa0, #4a8fdc); }
+.hbtn-rockon { background: linear-gradient(135deg, #7a2c8a, #b04ac0); }
+.hbtn-peace  { background: linear-gradient(135deg, #2c8a5a, #4ac08a); }
+
+.hbtn-preset:hover {
+    filter: brightness(1.15);
+}
+
+.hbtn-preset:active {
+    filter: brightness(0.9);
+}

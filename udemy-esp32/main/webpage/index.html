@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<script src='jquery-3.3.1.min.js'></script>
+		<!-- Three.js from CDN — the connecting device needs internet access for 3D rendering -->
+		<script src="three.min.js"></script>
+		<link rel="stylesheet" href="app.css">
+		<script src="app.js"></script>
+		<title>ESP32 Robotic Hand</title>
+	</head>
+	<body>
+	<header>
+		<h1>ESP32 Robotic Hand</h1>
+	</header>
+
+	<!-- ════════ Hand Control Tab ════════ -->
+	<div id="tab-hand">
+
+		<!-- 3-D viewport -->
+		<div id="hand-viewport">
+			<canvas id="hand-canvas"></canvas>
+			<div id="hand-hint">Drag to rotate &nbsp;·&nbsp; Scroll to zoom</div>
+		</div>
+
+		<!-- Controls -->
+		<div id="hand-controls">
+			<div class="hand-section-label">All Fingers</div>
+			<div class="hand-global-row">
+				<button class="hbtn hbtn-open"  onclick="handOpenAll()">Open All</button>
+				<button class="hbtn hbtn-close" onclick="handCloseAll()">Close All</button>
+			</div>
+
+			<div class="hand-section-label" style="margin-top:14px;">Individual Fingers</div>
+			<div id="hand-finger-cards"></div>
+
+			<div class="hand-legend">0° = Closed &nbsp;·&nbsp; 90° = Half open &nbsp;·&nbsp; 180° = Fully open</div>
+
+			<!-- Presets -->
+			<div class="hand-section-label" style="margin-top:14px;">Presets</div>
+			<div class="hand-preset-row">
+				<button class="hbtn hbtn-preset hbtn-point"  onclick="handPreset('point')">Point</button>
+				<button class="hbtn hbtn-preset hbtn-rockon" onclick="handPreset('rockon')">Rock On</button>
+				<button class="hbtn hbtn-preset hbtn-peace"  onclick="handPreset('peace')">Peace</button>
+			</div>
+			</div>
+		</div>
+
+	</div>
+
+	</body>
+</html>
